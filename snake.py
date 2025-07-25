@@ -1,4 +1,3 @@
-import sys
 import argparse
 import random
 import pygame
@@ -7,6 +6,15 @@ CELL_SIZE = 20
 GRID_WIDTH = 30
 GRID_HEIGHT = 20
 FPS = 10
+
+# Retro neon colors
+BG_COLOR = (10, 10, 10)
+GRID_COLOR = (0, 200, 200)
+SNAKE1_COLOR = (57, 255, 20)
+SNAKE2_COLOR = (255, 60, 100)
+FOOD_COLOR = (255, 255, 0)
+BORDER_COLOR = (40, 40, 40)
+FONT_SIZE = 28
 
 UP = pygame.Vector2(0, -1)
 DOWN = pygame.Vector2(0, 1)
@@ -48,6 +56,7 @@ class Snake:
         for cell in self.body:
             rect = pygame.Rect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(surface, self.color, rect)
+            pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
 
 def spawn_food(*snakes):
@@ -71,7 +80,15 @@ def check_collision(snake, other_snake=None):
 
 def draw_food(surface, pos):
     rect = pygame.Rect(pos.x * CELL_SIZE, pos.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-    pygame.draw.rect(surface, (255, 255, 0), rect)
+    pygame.draw.rect(surface, FOOD_COLOR, rect)
+    pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
+
+
+def draw_grid(surface):
+    for x in range(0, GRID_WIDTH * CELL_SIZE, CELL_SIZE):
+        pygame.draw.line(surface, GRID_COLOR, (x, 0), (x, GRID_HEIGHT * CELL_SIZE))
+    for y in range(0, GRID_HEIGHT * CELL_SIZE, CELL_SIZE):
+        pygame.draw.line(surface, GRID_COLOR, (0, y), (GRID_WIDTH * CELL_SIZE, y))
 
 
 def main():
@@ -83,13 +100,14 @@ def main():
 
     pygame.init()
     screen = pygame.display.set_mode((GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE))
+    pygame.display.set_caption("Snake 2.0 Neon")
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont(None, 24)
+    font = pygame.font.SysFont("monospace", FONT_SIZE, bold=True)
 
-    snake1 = Snake((0, 255, 0), (GRID_WIDTH // 4, GRID_HEIGHT // 2))
+    snake1 = Snake(SNAKE1_COLOR, (GRID_WIDTH // 4, GRID_HEIGHT // 2))
     snake2 = None
     if args.mode == 'multi':
-        snake2 = Snake((255, 0, 0), (3 * GRID_WIDTH // 4, GRID_HEIGHT // 2))
+        snake2 = Snake(SNAKE2_COLOR, (3 * GRID_WIDTH // 4, GRID_HEIGHT // 2))
 
     food = spawn_food(snake1, snake2)
     scores = {args.p1: 0}
@@ -125,7 +143,8 @@ def main():
         if snake2 and check_collision(snake2, snake1):
             running = False
 
-        screen.fill((0, 0, 0))
+        screen.fill(BG_COLOR)
+        draw_grid(screen)
         draw_food(screen, food)
         snake1.draw(screen)
         if snake2:
